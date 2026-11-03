@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Task | Todo App</title>
+    <link rel="stylesheet" href="{% static 'tasks_app/css/style.css' %}">
+</head>
+<body>
+<main class="page-shell">
+    <section class="card">
+        <a class="brand" href="{% url 'task-list' %}">Todo App</a>
+        <h1>Create Task</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-actions">
+                <button type="submit">Create Task</button>
+                <a class="button button-secondary" href="{% url 'task-list' %}">Cancel</a>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

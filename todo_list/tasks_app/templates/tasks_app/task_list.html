@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Todo List</title>
+    <link rel="stylesheet" href="{% static 'tasks_app/css/style.css' %}">
+</head>
+<body>
+<main class="page-shell">
+    <header class="page-header">
+        <div>
+            <a class="brand" href="{% url 'task-list' %}">Todo App</a>
+            {% if request.user.is_authenticated %}
+                <p class="muted">Welcome, {{ request.user }}</p>
+            {% endif %}
+        </div>
+        <div class="header-actions">
+            {% if request.user.is_authenticated %}
+                <a class="button" href="{% url 'task-create' %}">Create New Task</a>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="button-secondary" type="submit">Logout</button>
+                </form>
+            {% else %}
+                <p>Please log in to view your tasks. <a href="{% url 'login' %}">Login</a></p>
+            {% endif %}
+        </div>
+    </header>
+
+    <section class="card">
+        <h1>My To-do List</h1>
+        <p class="task-progress">
+            {{ completed_count }} of {{ total_count }} tasks completed
+        </p>
+        <form id="task-search-form" class="search-form" method="GET">
+            <input id="task-search" type="search" name="search" placeholder="Search tasks" value="{{ search_input }}">
+            <input type="submit" value="Search">
+        </form>
+        <p id="search-status" aria-live="polite"></p>
+
+        <table id="task-table" class="task-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="task-list">
+                {% for task in tasks %}
+                    <tr>
+                        <td>
+                            <span class="{% if task.complete %}task-complete{% endif %}">
+                            {{ task.title }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="post" action="{% url 'task-toggle-complete' task.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="search" value="{{ search_input }}">
+                                <button class="completion-button {% if task.complete %}is-complete{% endif %}" type="submit">
+                                    {% if task.complete %}Completed{% else %}Mark complete{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                        <td><a href="{% url 'task-detail' task.pk %}">View Details</a></td>
+                        <td class="task-actions">
+                            <a href="{% url 'task-update' task.pk %}">Edit</a>
+                            <a href="{% url 'task-delete' task.pk %}">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="muted">No tasks available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<script>
+    const searchForm = document.getElementById("task-search-form");
+    const searchInput = document.getElementById("task-search");
+    const taskList = document.getElementById("task-list");
+    const searchStatus = document.getElementById("search-status");
+    let searchTimer;
+    let activeSearch;
+
+    async function searchTasks() {
+        if (activeSearch) {
+            activeSearch.abort();
+        }
+
+        activeSearch = new AbortController();
+        const searchUrl = new URL(window.location.href);
+        searchUrl.searchParams.set("search", searchInput.value);
+        searchStatus.textContent = "Searching...";
+
+        try {
+            const response = await fetch(searchUrl, {
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+                signal: activeSearch.signal
+            });
+            if (!response.ok) {
+                throw new Error("Search request failed.");
+            }
+
+            const documentFromResponse = new DOMParser().parseFromString(
+                await response.text(),
+                "text/html"
+            );
+            const results = documentFromResponse.querySelector("#task-list");
+            if (!results) {
+                throw new Error("Search results could not be loaded.");
+            }
+
+            taskList.replaceChildren(...results.childNodes);
+            window.history.replaceState(null, "", searchUrl);
+            searchStatus.textContent = "";
+        } catch (error) {
+            if (error.name !== "AbortError") {
+                searchStatus.textContent = "Search failed. Please try again.";
+            }
+        }
+    }
+
+    searchInput.addEventListener("input", () => {
+        window.clearTimeout(searchTimer);
+        searchTimer = window.setTimeout(searchTasks, 200);
+    });
+
+    searchForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        window.clearTimeout(searchTimer);
+        searchTasks();
+    });
+</script>
+</body>
+</html>

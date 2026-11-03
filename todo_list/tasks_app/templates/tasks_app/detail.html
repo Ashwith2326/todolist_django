@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ task.title }} | Todo App</title>
+    <link rel="stylesheet" href="{% static 'tasks_app/css/style.css' %}">
+</head>
+<body>
+<main class="page-shell">
+    <article class="card">
+        <a class="brand" href="{% url 'task-list' %}">Todo App</a>
+        <h1 class="{% if task.complete %}task-complete{% endif %}">{{ task.title }}</h1>
+        <p>{{ task.description|default:"No description provided." }}</p>
+        <p class="muted">Status: {% if task.complete %}Completed{% else %}Not completed{% endif %}</p>
+        <div class="task-actions">
+            <a class="button" href="{% url 'task-update' task.pk %}">Edit task</a>
+            <a href="{% url 'task-list' %}">Back to tasks</a>
+        </div>
+    </article>
+</main>
+</body>
+</html>

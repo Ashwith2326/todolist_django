@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create an account | Todo App</title>
+    <link rel="stylesheet" href="{% static 'tasks_app/css/style.css' %}">
+</head>
+<body>
+<main class="auth-layout">
+    <section class="auth-card">
+        <a class="brand" href="{% url 'task-list' %}">Todo App</a>
+        <h1>Create an account</h1>
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                {{ form.non_field_errors }}
+            {% endif %}
+            <p>
+                <label for="{{ form.username.id_for_label }}">Your username</label>
+                {{ form.username }}
+                {{ form.username.errors }}
+            </p>
+            <p>
+                <label for="{{ form.password1.id_for_label }}">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.help_text %}
+                    <span class="helptext">{{ form.password1.help_text|safe }}</span>
+                {% endif %}
+                {{ form.password1.errors }}
+            </p>
+            <p>
+                <label for="{{ form.password2.id_for_label }}">Confirm password</label>
+                {{ form.password2 }}
+                {% if form.password2.help_text %}
+                    <span class="helptext">{{ form.password2.help_text|safe }}</span>
+                {% endif %}
+                {{ form.password2.errors }}
+            </p>
+            <button type="submit">Create an account</button>
+        </form>
+        <p class="muted">Already have an account? <a href="{% url 'login' %}">Login here</a>.</p>
+    </section>
+</main>
+</body>
+</html>
