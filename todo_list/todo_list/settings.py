@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-1nio+egd#kavbesdkw+0$4b2ss*_gwm(#65(ghmpyy2_z%%5$2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['todolist-django-sigma.vercel.app', 'localhost', '127.0.0.1']
 
 
 # Application definition
